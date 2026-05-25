@@ -1,0 +1,200 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database Service
+  postgres:
+    image: postgres:15-alpine
+    container_name: biteswift-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=biteswift_main
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres-init/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    networks:
+      - biteswift-network
+
+  # MongoDB Service (Merchant Catalog)
+  mongodb:
+    image: mongo:6.0
+    container_name: biteswift-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=biteswift_merchant
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - biteswift-network
+
+  # RabbitMQ Message Broker Service
+  rabbitmq:
+    image: rabbitmq:3.11-management-alpine
+    container_name: biteswift-rabbitmq
+    ports:
+      - "5672:5672"       # RabbitMQ AMQP port
+      - "15672:15672"     # RabbitMQ Management Dashboard
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - biteswift-network
+
+  user-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        WORKSPACE: user-service
+    container_name: biteswift-user-service
+    profiles: ["apps"]
+    ports:
+      - "8001:8001"
+    environment:
+      - PORT=8001
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/biteswift_user
+      - JWT_SECRET=biteswift_secret_key_2026
+    depends_on:
+      - postgres
+    networks:
+      - biteswift-network
+
+  merchant-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        WORKSPACE: merchant-service
+    container_name: biteswift-merchant-service
+    profiles: ["apps"]
+    ports:
+      - "8002:8002"
+    environment:
+      - PORT=8002
+      - MONGO_URI=mongodb://mongodb:27017/biteswift_merchant
+    depends_on:
+      - mongodb
+    networks:
+      - biteswift-network
+
+  order-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        WORKSPACE: order-service
+    container_name: biteswift-order-service
+    profiles: ["apps"]
+    ports:
+      - "8003:8003"
+    environment:
+      - PORT=8003
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/biteswift_order
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - MERCHANT_SERVICE_URL=http://merchant-service:8002
+    depends_on:
+      - postgres
+      - rabbitmq
+      - merchant-service
+    networks:
+      - biteswift-network
+
+  delivery-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        WORKSPACE: delivery-service
+    container_name: biteswift-delivery-service
+    profiles: ["apps"]
+    ports:
+      - "8004:8004"
+    environment:
+      - PORT=8004
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/biteswift_delivery
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - USER_SERVICE_URL=http://user-service:8001
+      - ORDER_SERVICE_URL=http://order-service:8003
+    depends_on:
+      - postgres
+      - rabbitmq
+      - user-service
+      - order-service
+    networks:
+      - biteswift-network
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        WORKSPACE: notification-service
+    container_name: biteswift-notification-service
+    profiles: ["apps"]
+    ports:
+      - "8005:8005"
+    environment:
+      - PORT=8005
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      - rabbitmq
+    networks:
+      - biteswift-network
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        WORKSPACE: gateway
+    container_name: biteswift-gateway
+    profiles: ["apps"]
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - JWT_SECRET=biteswift_secret_key_2026
+      - USER_SERVICE_URL=http://user-service:8001
+      - MERCHANT_SERVICE_URL=http://merchant-service:8002
+      - ORDER_SERVICE_URL=http://order-service:8003
+      - DELIVERY_SERVICE_URL=http://delivery-service:8004
+      - NOTIFICATION_SERVICE_URL=http://notification-service:8005
+    depends_on:
+      - user-service
+      - merchant-service
+      - order-service
+      - delivery-service
+      - notification-service
+    networks:
+      - biteswift-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        WORKSPACE: frontend
+    container_name: biteswift-frontend
+    profiles: ["apps"]
+    command: npm run dev -w frontend -- --host 0.0.0.0
+    ports:
+      - "5173:5173"
+    depends_on:
+      - gateway
+      - notification-service
+    networks:
+      - biteswift-network
+
+volumes:
+  postgres-data:
+  mongodb-data:
+  rabbitmq-data:
+
+networks:
+  biteswift-network:
+    driver: bridge

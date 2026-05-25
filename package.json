@@ -1,0 +1,30 @@
+{
+  "name": "biteswift-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BiteSwift Microservice Food Delivery System",
+  "workspaces": [
+    "gateway",
+    "user-service",
+    "merchant-service",
+    "order-service",
+    "delivery-service",
+    "notification-service",
+    "frontend"
+  ],
+  "scripts": {
+    "install:all": "npm install",
+    "dev:infra": "docker compose up -d",
+    "stop:infra": "docker compose down",
+    "dev:backend": "concurrently --kill-others -n \"GATEWAY,USER,MERCHANT,ORDER,DELIVERY,NOTIF\" -c \"cyan,green,yellow,magenta,blue,white\" \"npm run dev -w gateway\" \"npm run dev -w user-service\" \"npm run dev -w merchant-service\" \"npm run dev -w order-service\" \"npm run dev -w delivery-service\" \"npm run dev -w notification-service\"",
+    "dev:frontend": "npm run dev -w frontend",
+    "dev": "npm run dev:infra && concurrently --kill-others -n \"BACKEND,FRONTEND\" -c \"cyan,green\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "docker:apps": "docker compose --profile apps up --build",
+    "docker:apps:down": "docker compose --profile apps down",
+    "build": "npm run build --workspaces --if-present",
+    "test:smoke": "node scripts/smoke-test.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
