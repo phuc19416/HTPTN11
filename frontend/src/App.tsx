@@ -823,26 +823,26 @@ export default function App() {
               {/* Topology canvas */}
               <div className="topology-container">
                 {/* SVG Connections */}
-                <svg className="topology-svg">
+                <svg className="topology-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
                   {/* Define paths for glowing flow animation */}
                   {/* Client to Gateway */}
-                  <path id="client-to-gateway" d="M 110 200 L 160 200" className="topo-line" />
+                  <path id="client-to-gateway" d="M 17 50 L 25 50" className="topo-line" />
                   
                   {/* Gateway to Services */}
-                  <path id="gateway-to-user" d="M 250 200 L 300 65" className="topo-line" />
-                  <path id="gateway-to-merchant" d="M 250 200 L 300 155" className="topo-line" />
-                  <path id="gateway-to-order" d="M 250 200 L 300 245" className="topo-line" />
+                  <path id="gateway-to-user" d="M 37 50 L 48 18" className="topo-line" />
+                  <path id="gateway-to-merchant" d="M 37 50 L 48 41" className="topo-line" />
+                  <path id="gateway-to-order" d="M 37 50 L 48 64" className="topo-line" />
                   
                   {/* Order to RabbitMQ */}
-                  <path id="order-to-rabbitmq" d="M 390 245 L 450 200" className="topo-line" />
+                  <path id="order-to-rabbitmq" d="M 59 64 L 67 50" className="topo-line" />
                   
                   {/* RabbitMQ to Delivery / Notif */}
-                  <path id="rabbitmq-to-delivery" d="M 540 200 L 580 125" className="topo-line" />
-                  <path id="rabbitmq-to-notif" d="M 540 200 L 580 275" className="topo-line" />
+                  <path id="rabbitmq-to-delivery" d="M 79 50 L 85 30" className="topo-line" />
+                  <path id="rabbitmq-to-notif" d="M 79 50 L 85 70" className="topo-line" />
                   
                   {/* Delivery simulation back to Order & RabbitMQ */}
-                  <path id="delivery-to-order" d="M 580 125 L 390 245" className="topo-line" />
-                  <path id="delivery-to-rabbitmq" d="M 580 125 L 450 200" className="topo-line" />
+                  <path id="delivery-to-order" d="M 85 30 L 59 64" className="topo-line" />
+                  <path id="delivery-to-rabbitmq" d="M 85 30 L 67 50" className="topo-line" />
 
                   {/* Active flow animations when triggered */}
                   {pulsePath && (
@@ -888,7 +888,7 @@ export default function App() {
                 </div>
 
                 {/* RabbitMQ Broker */}
-                <div className={`topo-node rabbitmq ${health['Order Service'] === 'UP' || health['Delivery Service'] === 'UP' ? 'active-node' : ''}`} style={{ width: '90px', height: '90px' }}>
+                <div className={`topo-node rabbitmq ${health['Order Service'] === 'UP' || health['Delivery Service'] === 'UP' ? 'active-node' : ''}`}>
                   <Database className="topo-icon" size={18} />
                   <span>RabbitMQ</span>
                   <span style={{ fontSize: '0.55rem', opacity: 0.7 }}>Port: 5672</span>

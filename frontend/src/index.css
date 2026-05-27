@@ -323,15 +323,17 @@ header {
   background: #090e1a;
   border: 1px solid var(--border-glass);
   border-radius: 16px;
-  height: 400px;
+  width: 100%;
+  height: clamp(360px, 46vw, 430px);
+  min-height: 360px;
   overflow: hidden;
 }
 
 /* Topology Node Styling */
 .topo-node {
   position: absolute;
-  width: 90px;
-  height: 90px;
+  width: clamp(74px, 11vw, 90px);
+  height: clamp(74px, 11vw, 90px);
   background: var(--bg-secondary);
   border: 2px solid var(--border-glass);
   border-radius: 50%;
@@ -339,12 +341,19 @@ header {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
+  font-size: clamp(0.62rem, 1.2vw, 0.7rem);
+  line-height: 1.15;
   font-weight: 700;
   text-align: center;
   transition: all 0.3s ease;
   z-index: 10;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  transform: translate(-50%, -50%);
+}
+
+.topo-node span {
+  max-width: 82%;
+  overflow-wrap: anywhere;
 }
 
 .topo-node.active-node {
@@ -352,14 +361,14 @@ header {
   box-shadow: var(--shadow-glow);
 }
 
-.topo-node.client { top: 155px; left: 20px; border-color: #3b82f6; }
-.topo-node.gateway { top: 155px; left: 160px; border-color: #38bdf8; }
-.topo-node.user { top: 20px; left: 300px; border-color: #4ade80; }
-.topo-node.merchant { top: 110px; left: 300px; border-color: #facc15; }
-.topo-node.order { top: 200px; left: 300px; border-color: #e879f9; }
-.topo-node.rabbitmq { top: 155px; left: 450px; border-color: #f97316; }
-.topo-node.delivery { top: 80px; left: 580px; border-color: #60a5fa; }
-.topo-node.notif { top: 230px; left: 580px; border-color: #e2e8f0; }
+.topo-node.client { top: 50%; left: 11%; border-color: #3b82f6; }
+.topo-node.gateway { top: 50%; left: 31%; border-color: #38bdf8; }
+.topo-node.user { top: 18%; left: 53%; border-color: #4ade80; }
+.topo-node.merchant { top: 41%; left: 53%; border-color: #facc15; }
+.topo-node.order { top: 64%; left: 53%; border-color: #e879f9; }
+.topo-node.rabbitmq { top: 50%; left: 73%; border-color: #f97316; }
+.topo-node.delivery { top: 30%; left: 90%; border-color: #60a5fa; }
+.topo-node.notif { top: 70%; left: 90%; border-color: #e2e8f0; }
 
 .topo-icon {
   margin-bottom: 0.25rem;
